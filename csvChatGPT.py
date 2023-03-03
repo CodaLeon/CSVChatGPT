@@ -25,8 +25,8 @@ if 'past' not in st.session_state:
 if 'history' not in st.session_state:
     st.session_state['history'] = []
 
-if 'text' not in st.session_state:
-    st.session_state.text = ""
+if 'uploadKey' not in st.session_state:
+    st.session_state['uploadKey'] = 1
 
 def generate_response(prompt):
         chat = openai.ChatCompletion.create(
@@ -39,23 +39,19 @@ def generate_response(prompt):
 def update():
     st.session_state.text += st.session_state.text_value
 
-with st.form(key='my_form',clear_on_submit=True):
-    uploaded_file = st.file_uploader("Choose a CSV file")
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-    st.text_input('Enter your prompt and click on submit', value="", key='text_value')
-    submit = st.form_submit_button(label='Submit', on_click=update)
+
+uploaded_file = st.file_uploader("Choose a CSV file", key=st.session_state['uploadKey'])
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    st.write(df)
+
+user_input = st.text_input('Enter your prompt and click on submit', value="", key='text_value')
 
 #Get user response
-if uploaded_file is not None and st.session_state.text != "":
+if uploaded_file is not None and user_input != "":
     #Get user response
-    st.session_state.text = st.session_state.text + df.to_json()
-    uploaded_file = None
-
-user_input = st.session_state.text
-
-st.session_state.text = ""
+    user_input = user_input + df.to_json()
+    st.session_state['uploadKey'] += 1
 
 if user_input:
         
